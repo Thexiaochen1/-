@@ -1,0 +1,29 @@
+name: 自动更新赛事信息
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: ① 取出代码
+        uses: actions/checkout@v4
+
+      - name: ② 运行抓取脚本
+        run: node fetch-contests.js
+
+      - name: ③ 有变化就提交回去
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add contests.json
+          git diff --cached --quiet || git commit -m "🔄 自动更新赛事信息 $(date '+%Y-%m-%d')"
+          git push
