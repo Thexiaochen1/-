@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<!-- 第 1 行：告诉浏览器"我是一个 HTML 文件"，请按标准网页解析 -->
+
+<html lang="zh-CN">
+  <!-- html：整个网页的"大盒子"，所有东西都装在里面 -->
+
+  <head>
+    <!-- head（脑袋）：给浏览器看的信息，用户看不见 -->
+    <meta charset="UTF-8" />
+    <!-- 声明文字编码，少了这行中文会变乱码 -->
+    <title>学习部官网</title>
+    <!-- 浏览器标签页上显示的名字 -->
+
+    <!-- ===== 板块四：CSS 从这里开始 ===== -->
+    <style>
+      /* CSS 语法：选择器 { 属性: 值; } */
+      h1 {
+        color: #e74c3c; /* 选择 h1，把文字颜色改成红色 */
+      }
+      p { color: red; }
+      a {
+        color: #27ae60; /* 链接变绿色 */
+      }
+      li {
+        color: #e67e22; /* 列表项变橙色 */
+      }
+
+      /* 🎨 页面底色：不用刺眼的白，换成暖米色（和"翻书"的纸感呼应） */
+      body {
+        margin: 0; /* 去掉浏览器默认的白边 */
+        background: linear-gradient(180deg, #fbf3e1 0%, #f3ebd6 100%); /* 暖米色渐变 */
+        min-height: 100vh;
+      }
+
+      /* 🃏 卡片样式：只给打了 class="card" 标记的元素 */
+      .card {
+        background-color: #fff8e7; /* 柔和的暖黄底（不再是灰白） */
+        border: 2px solid #e3c98f; /* 淡淡的金色边框 */
+        border-radius: 12px;       /* 圆角 */
+        padding: 16px;             /* 内边距：内容到边框的空隙 */
+        margin: 12px 0;            /* 外边距：卡片到周围元素的空隙 */
+        box-shadow: 0 2px 8px rgba(180, 150, 80, 0.15); /* 一层很轻的暖色投影 */
+      }
+
+      /* 生活技巧卡片：换成舒服的浅绿，和金色卡片区分开 */
+      .card.green {
+        background-color: #eef4e6;
+        border-color: #b9d0a3;
+      }
+
+      /* 🔥 实验③：只给打了 class="hot" 标记的元素换红边框 */
+      .hot {
+        border-color: #e74c3c; /* 边框变成红色 */
+      }
+
+      /* 🔘 按钮样式 */
+      button {
+        background-color: #3498db; /* 蓝色底 */
+        color: #fff;               /* 白字 */
+        border: none;              /* 去掉默认边框 */
+        border-radius: 6px;        /* 圆角 */
+        padding: 8px 16px;         /* 内边距 */
+        cursor: pointer;           /* 鼠标变小手 */
+      }
+
+      /* 🧭 顶部导航栏 */
+      .navbar {
+        background-color: #2c3e50; /* 深蓝底 */
+        padding: 14px 20px;        /* 上下14 左右20 */
+        position: sticky;          /* 吸顶：滚动时固定在顶部 */
+        top: 0;
+        z-index: 10;               /* 压在内容上面 */
+      }
+      .navbar .brand {
+        color: #fff;               /* 社团名字：白字加粗 */
+        font-weight: bold;
+        margin-right: 24px;
+      }
+      .navbar a {
+        color: #fff;               /* 导航链接：白字 */
+        text-decoration: none;     /* 去掉下划线 */
+        margin-right: 16px;
+      }
+      .navbar a:hover {
+        color: #3498db;            /* 鼠标移上去变蓝 */
+      }
+
+      /* 📦 各区块通用容器 */
+      .container {
+        max-width: 800px;          /* 内容最宽 800 */
+        margin: 20px auto;         /* 上下留白，左右自动居中 */
+        padding: 0 20px;
+      }
+      h1 {
+        animation: colorBreathe 3s infinite alternate;
+        /* 让标题播放名为 colorBreathe 的动画：3 秒一个来回，无限循环 */
+      }
+      @keyframes colorBreathe {
+        /* 定义动画的"剧本"：颜色从起点渐变到终点 */
+        from {
+          color: #e74c3c; /* 起点：红 */
+        }
+        to {
+          color: #3498db; /* 终点：蓝 */
+        }
+      }
+
+      /* ===== 🌼 桂花飘落（升级版：更接近真花） ===== */
+      /* 桂花层：铺满整个屏幕，专门装飘落的桂花 */
+      #petalLayer {
+        position: fixed;      /* 固定在屏幕上，不管滚不滚动都在 */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none; /* 鼠标可以"穿透"它，不挡任何按钮 */
+        z-index: 5;           /* 压在下层内容上面，但在封面下面 */
+        overflow: hidden;     /* 多出来的桂花藏在屏幕外，不出现滚动条 */
+      }
+
+      /* 每一朵小桂花：外层只管"飘落"，内层负责"翻转摇摆" */
+      .petal {
+        position: absolute;
+        top: -50px;                          /* 从屏幕顶外面开始飘 */
+        opacity: 0;                          /* 动画开始前先隐身，等它飘下来再出现 */
+        animation: petalFall linear forwards; /* 飘落路径，时长/延迟/摇晃幅度在 JS 里随机设定 */
+      }
+
+      /* 内层：让桂花边落边转边摇，像被风吹着打转 */
+      .petal-inner {
+        width: 100%;
+        height: 100%;
+        animation: petalWobble ease-in-out infinite;
+      }
+
+      /* 桂花的 SVG 图片：撑满外层盒子 */
+      .petal svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      /* 飘落动画：从上往下走"S 形"，越往下越淡 */
+      @keyframes petalFall {
+        0% {
+          transform: translate3d(0, 0, 0);
+          opacity: 0; /* 刚出现时透明 */
+        }
+        8% {
+          opacity: 0.95; /* 一下变清楚 */
+        }
+        30% {
+          transform: translate3d(var(--sway, 30px), 24vh, 0);
+        }
+        55% {
+          transform: translate3d(calc(var(--sway, 30px) * -1), 50vh, 0);
+        }
+        80% {
+          transform: translate3d(var(--sway, 30px), 78vh, 0);
+        }
+        100% {
+          transform: translate3d(calc(var(--sway, 30px) * 0.4), 108vh, 0);
+          opacity: 0.5; /* 飘到最下面时稍微变淡 */
+        }
+      }
+
+      /* 翻转摇摆动画：像被风吹着打转，不是呆板地直线下落 */
+      @keyframes petalWobble {
+        0%, 100% { transform: rotate(var(--rot0, 0deg)); }
+        20%      { transform: rotate(calc(var(--rot0, 0deg) + 35deg)); }
+        40%      { transform: rotate(calc(var(--rot0, 0deg) + 12deg)); }
+        60%      { transform: rotate(calc(var(--rot0, 0deg) - 28deg)); }
+        80%      { transform: rotate(calc(var(--rot0, 0deg) + 30deg)); }
+      }
+
+      /* ===== 📖 翻开书页的进入动画 ===== */
+      /* 书皮封面：盖住整个页面，像一本合着的书 */
+      .book-cover {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 100;          /* 最高层，盖住一切 */
+        perspective: 1800px;   /* 3D 透视：让翻页有立体感 */
+      }
+
+      /* 左侧书脊：翻书的"轴"，像真书一样钉在左边 */
+      .book-spine {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 36px;
+        height: 100%;
+        background: linear-gradient(90deg, #0f2033, #1f3a5f); /* 深色书脊 */
+        border-right: 2px solid #e0a925; /* 金色缝线 */
+        z-index: 3; /* 压在封面上面一点，营造"缝线"感 */
+      }
+
+      /* 第一页：藏在封面下面，翻开后露出来的"欢迎页"（浅色纸） */
+      .page-under {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #fdf6e3, #f7ecd5); /* 米黄纸色 */
+        z-index: 1; /* 最底层，被封面盖住 */
+      }
+
+      /* 封面：盖在最上面，占满整本书，标题在左上角 */
+      .page-cover {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #1f3a5f, #16283f); /* 深蓝书皮 */
+        color: #fff;
+        z-index: 2; /* 压在"第一页"上面 */
+        transform-origin: left center; /* 绕着书脊（左边）翻 */
+        transform: rotateY(0deg);
+        transition:
+          transform 1.6s ease-in-out, /* 翻页：1.6 秒完成 */
+          opacity 0.6s ease 1.4s;     /* 快翻完时慢慢淡出 */
+        backface-visibility: hidden;  /* 翻过去后背面不可见，更真实 */
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.4); /* 封面边缘的投影 */
+      }
+
+      /* 翻开后：封面绕左边书脊，从左往右翻过去并淡出 */
+      .book-cover.open .page-cover {
+        transform: rotateY(180deg);
+        opacity: 0;
+      }
+
+      /* 封面左上角的文字内容 */
+      .cover-content {
+        position: absolute;
+        top: 8vh;   /* 距离屏幕上方 8% */
+        left: 8vw;  /* 距离屏幕左边 8% */
+        text-align: left; /* 靠左上角对齐 */
+      }
+      .cover-title {
+        font-size: 48px;
+        margin: 0 0 10px 0;
+        color: #f5c542; /* 金色大字 */
+      }
+      .cover-small {
+        color: #b8c4d6;
+        letter-spacing: 4px;
+      }
+      .cover-desc {
+        color: #d5dce8;
+        line-height: 1.8;
+        margin: 24px 0;
+        font-size: 16px;
+      }
+
+      /* 第一页（欢迎页）的文字内容 */
+      .page-content {
+        text-align: center;
+        color: #5b4636;
+        padding: 20px;
+      }
+      .page-small {
+        color: #b8860b; /* 深金色 */
+        letter-spacing: 4px;
+      }
+      .under-title {
+        font-size: 34px;
+        color: #3a2a10;
+        margin: 10px 0;
+      }
+      .under-desc {
+        color: #8a7355;
+        line-height: 2;
+        font-size: 17px;
+      }
+
+      /* 金色的"翻开书页"按钮 */
+      .open-btn {
+        background: linear-gradient(135deg, #f5c542, #e0a925);
+        color: #3a2a10;
+        border: none;
+        border-radius: 30px;
+        padding: 14px 32px;
+        font-size: 18px;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(224, 169, 37, 0.5);
+        transition: transform 0.2s;
+        margin-top: 20px;
+      }
+      .open-btn:hover {
+        transform: scale(1.05); /* 鼠标移上去稍微变大一点 */
+      }
+
+      /* 🕸️ 自动抓取的说明文字 */
+      .auto-tip {
+        color: #b8860b; /* 深金色 */
+        font-size: 14px;
+      }
+
+      /* 🏷️ 赛事状态徽章 */
+      .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        color: #fff;
+        margin-left: 6px;
+      }
+      .badge-open { background-color: #27ae60; } /* 报名中：绿色 */
+      .badge-wait { background-color: #e67e22; } /* 即将报名：橙金色 */
+
+      /* 🔗 卡片里的"去查看"链接 */
+      .card-link {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: bold;
+      }
+      .card-link:hover {
+        text-decoration: underline; /* 鼠标移上去加下划线 */
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- 🌼 桂花飘落层：专门装飘下来的桂花（盖在页面上，但鼠标能穿透它） -->
+    <div id="petalLayer"></div>
+
+    <!-- 📖 开场封面：像一本合着的书，点"翻开书页"按钮进入网站 -->
+    <div class="book-cover" id="bookCover">
+      <!-- 左侧书脊：翻书的"轴"，像真书一样钉在左边 -->
+      <div class="book-spine"></div>
+
+      <!-- 第一页（藏在封面下面）：翻开后露出来的"欢迎页" -->
+      <div class="book-page page-under">
+        <div class="page-content">
+          <p class="page-small">桂香满园 · 学海无涯</p>
+          <h2 class="under-title">欢迎来到明德学社</h2>
+          <p class="under-desc">
+            学习 · 竞赛 · 成长<br />愿你在明德学社，遇见更好的自己。
+          </p>
+        </div>
+      </div>
+
+      <!-- 封面（盖在最上面）：标题在左上角，整页从左往右翻开 -->
+      <div class="book-page page-cover">
+        <div class="cover-content">
+          <h1 class="cover-title">明德学社</h1>
+          <p class="cover-small">桂香满园 · 学海无涯</p>
+          <button class="open-btn" onclick="openBook()">进入网站</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🧭 顶部导航栏：点击链接跳到对应区块 -->
+    <nav class="navbar">
+      <span class="brand">明德学社</span>
+      <a href="#home">首页</a>
+      <a href="#study">学习</a>
+      <a href="#competition">竞赛</a>
+      <a href="#join">招新</a>
+      <a href="#about">关于</a>
+    </nav>
+
+    <!-- 🏠 首页区块：问候语已删除，保留区块给"首页"导航锚点用 -->
+    <section id="home" class="container"></section>
+
+    <!-- 📚 学习区块 -->
+    <section id="study" class="container">
+      <h2>学习小帮手</h2>
+      <!-- 🏭 学习卡片：由 JS"生产"，这里是空的容器 -->
+      <div id="studyList"></div>
+    </section>
+
+    <!-- 🏆 竞赛信息区块：自动抓取外部竞赛网站的数据 -->
+    <section id="competition" class="container">
+      <h2>竞赛信息</h2>
+      <p class="auto-tip">🕸️ 以下内容自动更新（数据来源：赛链赛事官网，每天抓取一次）</p>
+      <!-- 抓取到的比赛列表会由 JS 放进这个空容器里 -->
+      <div id="contestList"></div>
+    </section>
+
+    <!-- 🙋 招新区块（待填写） -->
+    <section id="join" class="container">
+      <h2>加入我们</h2>
+      <p>（报名方式、面试时间待填写）</p>
+    </section>
+
+    <!-- 💌 关于我们区块（待填写） -->
+    <section id="about" class="container">
+      <h2>关于明德学社</h2>
+      <p>（部门介绍、联系方式待填写）</p>
+    </section>
+
+    <!-- ===== 板块五：JavaScript 从这里开始 ===== -->
+    <script>
+      // 🧺 变量：给数据起名字的"盒子"
+      let clubName = "明德学社"; // 把社团名字存进盒子里
+
+      // 函数：一段随叫随到的代码
+      function welcome(member) {
+        // 用 + 拼接文字，把盒子里存的 clubName 也拼进来
+        alert("欢迎加入" + clubName + " " + member + "！🎉");
+      }
+
+      // 🎯 DOM 操作：让网页"自己改自己"
+      function changeTitle() {
+        // 注意：.card 前面有个点！这是"class 点名"的标志
+        let title = document.querySelector(".card"); // 找到第一张卡片
+        title.textContent = "明德学社欢迎你！"; // 改它的文字
+        title.style.color = "#3498db"; // 文字变蓝色
+      }
+
+      // 🧺 数组：能装很多条数据的"大盒子"（只留学习工具和生活技巧两张卡片）
+      let resources = [
+        { name: "学习工具", tone: "" },
+        { name: "生活技巧", tone: "green" },
+      ];
+
+      // 🏭 生产机器：把数组里的数据，一条条变成卡片
+      function buildCards() {
+        let list = document.querySelector("#studyList"); // 找到空容器
+        for (let i = 0; i < resources.length; i++) {
+          let card = document.createElement("div"); // 造一个 div
+          // 生活技巧贴 green 标签，配色和金色卡片区分开
+          card.className =
+            "card" + (resources[i].tone ? " " + resources[i].tone : "");
+          card.innerHTML = "<h3>" + resources[i].name + "</h3>"; // 只留标题，解释删掉
+
+          // 🖱️ 给这张卡片装上"点击"事件：点了就弹出它自己的标题
+          card.addEventListener("click", function () {
+            alert("你点击了「" + resources[i].name + "」！");
+          });
+
+          list.appendChild(card); // 放进容器里
+        }
+      }
+      buildCards(); // 开机！立刻生产卡片
+
+      // 🌼 桂花品种：金桂 / 丹桂 / 银桂
+      // 每个品种存 4 个颜色：deep 花芯最深、mid 花瓣中间色、light 瓣尖最浅、core 花喉
+      let osmanthusKinds = [
+        { deep: "#a86f10", mid: "#e0a02a", light: "#ffe38f", core: "#7c4f0a" }, // 金桂
+        { deep: "#bf4a16", mid: "#e8742e", light: "#ffc27d", core: "#74280f" }, // 丹桂
+        { deep: "#b3a270", mid: "#e6d99f", light: "#fdf6e0", core: "#85783a" }, // 银桂
+      ];
+
+      let petalGid = 0; // 每个 SVG 用独一无二的渐变编号，防止互相串色
+
+      // 画一朵四瓣小花：返回 SVG 里的一个 <g> 组
+      // x、y 是花芯位置，s 是缩放，opacity 让"后面那朵"稍微暗一点，calyx 是否露出绿色花萼
+      function flowerGroup(kind, gid, x, y, s, opacity, calyx) {
+        let extra = opacity === undefined ? "" : ' opacity="' + opacity + '"';
+        // 花萼：藏在花瓣底下的小绿杯（真桂花的花托是绿的）
+        let calyxSvg = calyx
+          ? '<circle cx="12" cy="12" r="2.6" fill="#6f9040" opacity="0.4"/>'
+          : "";
+        return (
+          '<g transform="translate(' + x + " " + y + ') scale(' + s + ')"' + extra + ">" +
+          calyxSvg +
+          // 四片花瓣（十字形）：每片都是"中间宽、两头尖"的真花瓣形状
+          '<path d="M12 12 C 10.3 8.5, 10.7 4.7, 12 3.3 C 13.3 4.7, 13.7 8.5, 12 12 Z" fill="url(#g' + gid + ')"/>' +
+          '<path d="M12 12 C 15.5 10.3, 19.3 10.7, 20.7 12 C 19.3 13.3, 15.5 13.7, 12 12 Z" fill="url(#g' + gid + ')"/>' +
+          '<path d="M12 12 C 13.7 15.5, 13.3 19.3, 12 20.7 C 10.7 19.3, 10.3 15.5, 12 12 Z" fill="url(#g' + gid + ')"/>' +
+          '<path d="M12 12 C 8.5 13.7, 4.7 13.3, 3.3 12 C 4.7 10.7, 8.5 10.3, 12 12 Z" fill="url(#g' + gid + ')"/>' +
+          // 花喉（花瓣根部的小深点）+ 两根淡黄雄蕊
+          '<circle cx="12" cy="12" r="1.5" fill="' + kind.core + '"/>' +
+          '<circle cx="11.3" cy="11.3" r="0.7" fill="#f7e3a1"/>' +
+          '<circle cx="12.7" cy="12.7" r="0.7" fill="#f7e3a1"/>' +
+          "</g>"
+        );
+      }
+
+      // 造一整朵（或一小簇）桂花 SVG
+      function osmanthusSvg(isCluster) {
+        petalGid++;
+        let kind = osmanthusKinds[Math.floor(Math.random() * osmanthusKinds.length)];
+        let gid = petalGid;
+        // 渐变：花芯最深 → 瓣尖最浅（真桂花就是中心深、瓣尖浅）
+        let defs =
+          '<defs><radialGradient id="g' + gid + '" cx="50%" cy="50%" r="62%">' +
+          '<stop offset="0%" stop-color="' + kind.deep + '"/>' +
+          '<stop offset="45%" stop-color="' + kind.mid + '"/>' +
+          '<stop offset="100%" stop-color="' + kind.light + '"/>' +
+          "</radialGradient></defs>";
+
+        if (isCluster) {
+          // 一小簇：中间一朵大的，周围三朵小的（真桂花都是一簇簇开的）
+          return (
+            '<svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">' +
+            defs +
+            flowerGroup(kind, gid, 26, 26, 1, 0.92, false) +   // 中间大朵
+            flowerGroup(kind, gid, 15, 34, 0.62, 0.9, true) +  // 左下小朵
+            flowerGroup(kind, gid, 33, 17, 0.55, 0.85, true) + // 右上小朵
+            flowerGroup(kind, gid, 33, 35, 0.5, 0.8, false) +  // 右下更小
+            "</svg>"
+          );
+        }
+        // 单朵：四分之一概率露出花萼，看起来像微微侧着
+        return (
+          '<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">' +
+          defs +
+          flowerGroup(kind, gid, 12, 12, 1, undefined, Math.random() < 0.25) +
+          "</svg>"
+        );
+      }
+
+      // 🌼 桂花工厂：造一朵小桂花，丢进桂花层
+      function makePetal() {
+        let layer = document.getElementById("petalLayer"); // 找到桂花层
+        let petal = document.createElement("div");          // 外层：负责飘落
+        petal.className = "petal";
+
+        // 20% 是一小簇，其余是单朵；大小也跟着变
+        let cluster = Math.random() < 0.2;
+        let size = cluster ? 34 + Math.random() * 12 : 14 + Math.random() * 6;
+        petal.style.width = size + "px";
+        petal.style.height = size + "px";
+
+        // 飘落起点：整个屏幕宽度随机（原来只飘左上角 45%）
+        petal.style.left = Math.random() * 92 + "%";
+
+        // 左右摇晃幅度：正负随机，飘的时候走"S 形"
+        petal.style.setProperty(
+          "--sway",
+          (20 + Math.random() * 50) * (Math.random() < 0.5 ? 1 : -1) + "px"
+        );
+
+        // 每朵下落速度不一样（6~11 秒）
+        petal.style.animationDuration = 6 + Math.random() * 5 + "s";
+        // 错开开始时间，让桂花不是同时掉下来
+        petal.style.animationDelay = Math.random() * 6 + "s";
+
+        // 内层：负责"翻转摇摆"，转得快的像被风吹得打转
+        let inner = document.createElement("div");
+        inner.className = "petal-inner";
+        inner.style.animationDuration = 1.6 + Math.random() * 2 + "s";
+        inner.style.setProperty("--rot0", Math.random() * 80 - 40 + "deg");
+        inner.innerHTML = osmanthusSvg(cluster);
+
+        petal.appendChild(inner);
+        layer.appendChild(petal); // 放进桂花层
+
+        // 飘完全程后就删掉它，避免桂花越积越多
+        setTimeout(function () {
+          petal.remove();
+        }, 15000);
+      }
+
+      // 开机！每隔 0.4 秒造一朵桂花（这样就会一直飘落）
+      setInterval(makePetal, 400);
+
+      // 📖 翻开书页：点击"翻开书页"按钮后触发
+      function openBook() {
+        let cover = document.getElementById("bookCover"); // 找到封面
+        cover.classList.add("open"); // 加上 open 标记 → CSS 里的翻页动画生效
+
+        // 等封面从左往右翻过去（1.6 秒），再让"欢迎页"停留一会儿
+        setTimeout(function () {
+          cover.style.transition = "opacity 0.8s"; // 准备整体淡出动画
+          cover.style.opacity = "0";               // 变透明
+          cover.style.pointerEvents = "none";      // 不再挡住鼠标
+        }, 2200); // 1.6 秒翻页 + 0.6 秒停留 = 2.2 秒后淡出
+
+        // 完全消失后，把封面从页面里移除，腾出空间
+        setTimeout(function () {
+          cover.remove();
+        }, 3100);
+      }
+
+      // ===== 🕸️ 自动抓取：读取"赛链赛事信息" =====
+      // 原理一句话：
+      //   赛链官网不允许网页直接抓（跨域限制）→ 我们派 GitHub Actions
+      //   每天定时去抓，结果写成 contests.json 存进仓库 → 网页读它就行！
+      //
+      // ⭐ 关键设置：数据源地址
+      //   本地测试：contests.json（和 index.html 放在同一个文件夹）
+      //   上线后：改成你的 GitHub raw 地址（操作步骤看 README-自动抓取.md）
+      let CONTEST_SOURCE = "contests.json";
+
+      async function loadContests() {
+        try {
+          // 1. 派信使去取 contests.json（GitHub 的 raw 文件允许跨域读取）
+          let response = await fetch(CONTEST_SOURCE);
+          let data = await response.json(); // 把文本拆成 JSON
+
+          // 2. 找到页面上的空容器，先清空
+          let list = document.querySelector("#contestList");
+          list.innerHTML = "";
+
+          // 3. 把每条赛事变成一张卡片
+          for (let i = 0; i < data.contests.length; i++) {
+            let c = data.contests[i];
+
+            // 根据状态选徽章颜色：报名中→绿，其他→橙金
+            let badgeClass =
+              c.status.indexOf("报名中") > -1 ? "badge-open" : "badge-wait";
+
+            let card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML =
+              "<h3>🏆 " + c.title + "</h3>" +
+              "<p>📅 " + c.date +
+              ' <span class="badge ' + badgeClass + '">' + c.status + "</span></p>" +
+              '<a class="card-link" href="' + c.link + '" target="_blank">去报名/查看 →</a>';
+            list.appendChild(card);
+          }
+
+          // 4. 顺便显示"上次更新时间"
+          document.querySelector(".auto-tip").textContent +=
+            " · 上次更新：" + data.updated;
+        } catch (error) {
+          // 读取失败时（比如用 file:// 直接打开被浏览器拦），给个提示
+          document.querySelector("#contestList").innerHTML =
+            "<p>⚠️ 读取失败。本地测试请用 Live Server 启动，或稍后刷新</p>";
+        }
+      }
+
+      // 开机！立刻读取一次赛事信息
+      loadContests();
+
+      /* ---------- 📚 延伸学习：上面的 fetch 教学示例 ----------
+      之前我们演示过从 Codeforces 抓比赛（它的接口允许跨域）：
+      let url = "https://codeforces.com/api/contest.list?gym=false";
+      但赛链官网没开跨域，所以网页不能直接抓，
+      才需要"GitHub Actions 每天抓一次 → 存成 JSON → 网页读 JSON"的流程。
+      ---------------------------------------------------------- */
+    </script>
+  </body>
+</html>
